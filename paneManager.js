@@ -1,0 +1,188 @@
+window.addEventListener('DOMContentLoaded', function() {
+  let iframes = [].slice.call(document.querySelectorAll('iframe'));
+
+  let generateId = (function() {
+    let count = 0;
+
+    return function() {
+      count += 1;
+      return count;
+    }
+  })();
+
+  function Pane(iframe) {
+    this.id = generateId();
+    this.element = iframe;
+    this.origin = new URL(iframe.src).origin;
+    this.previousHeight = 0;
+    this.initialized = false;
+    this.eligible = !this.element.height;
+  }
+
+  Pane.prototype.getHeight = function() {
+    return this.element.height;
+  }
+
+  Pane.prototype.setHeight = function(value) {
+    let currentHeight = this.getHeight();
+    if (this.eligible && currentHeight !== value) {
+      this.previousHeight = currentHeight;
+      this.element.height = value;
+    }
+    if (!this.initialized) {
+      this.initialized = true;
+    }
+  }
+
+  Pane.prototype.heightChanged = function() {
+    return this.previousHeight !== this.getHeight();
+  }
+
+  Pane.prototype.scrollToTop = function() {
+    window.scrollTo(0, this.element.offsetTop);
+  }
+
+  Pane.prototype.requestUpdate = function(data) {
+    let targetWindow = this.element.contentWindow;
+    let payload = Object.assign(data, {id: this.id});
+    targetWindow.postMessage(payload, this.origin);
+  }
+
+  Pane.prototype.broadcastId = function() {
+    this.requestUpdate({initial: true});
+  }
+
+  Pane.prototype.setOrigin = function(origin) {
+    this.origin = origin;
+  }
+
+  let Panes = {
+    list: [],
+
+    registerPanes: function(iframeList) {
+      iframeList.forEach(this.registerIframe.bind(this));
+    },
+
+    registerIframe: function(iframe) {
+      this.add(new Pane(iframe));
+    },
+
+    unregisterIframe: function(iframe) {
+      let pane = this.list.filter(pane => pane.element === iframe)[0];
+      let index = this.list.indexOf(pane);
+      this.list.splice(index, 1);
+    },
+
+    requestUpdates: function(data) {
+      this.list.forEach(function(pane) {
+        let payload = {
+          id: pane.id,
+          name: 'iframe-resizer',
+        };
+        if (data && data.id === pane.id) {
+          payload.navigation = data.navigation;
+        }
+        pane.requestUpdate(payload);
+      });
+    },
+
+    getById: function(id) {
+      return this.list.filter(pane => pane.id === id)[0];
+    },
+
+    getByLocation: function(location) {
+      return this.list.filter(pane => pane.element.src === location)[0];
+    },
+
+    add: function(pane) {
+      this.list.push(pane);
+    },
+
+    isTrustedSource: function(origin) {
+      return this.origins.includes(origin);
+    },
+
+    empty: function() {
+      return this.list.length === 0;
+    },
+
+    notInitialized: function() {
+      return this.list.some(pane => !pane.initialized);
+    },
+
+    buildOriginsList: function() {
+      let origins = [];
+      this.list.forEach(pane => {
+        if (!origins.includes(pane.origin)) {
+          origins.push(pane.origin);
+        }
+      });
+      return origins;
+    },
+
+    init: function(iframes) {
+      this.registerPanes(iframes);
+      this.origins = this.buildOriginsList();
+    },
+  };
+  Panes.init(iframes);
+
+  window.addEventListener('resize', () => Panes.requestUpdates());
+
+  let pendingPaneId = null;
+  window.addEventListener('message', function(event) {
+    let data = event.data;
+
+    if (Panes.isTrustedSource(event.origin)) {
+      if (data.clicked) {
+        setIframeHeight(data.id, data.height);
+      } else if (data.navigation) { // location change
+        pendingPaneId = data.id;
+      } else if (data.initial && Panes.notInitialized()) { // initial load
+        let pane = Panes.getByLocation(data.location);
+        setIframeHeight(pane.id, data.height);
+        pane.broadcastId();
+      } else if (data.initial && pendingPaneId) { // initial load after location change
+        let id = pendingPaneId;
+        pendingPaneId = null;
+        setIframeHeight(id, data.height);
+        let pane = Panes.getById(id);
+        if (pane.heightChanged()) {
+          pane.scrollToTop();
+        }
+        pane.setOrigin(event.origin);
+        pane.broadcastId();
+      } else if (data.id) { // page resized or interaction within iframe
+        setIframeHeight(data.id, data.height);
+      }
+    }
+  });
+
+  function setIframeHeight(id, height) {
+    let pane = Panes.getById(id);
+    pane.setHeight(height);
+  }
+
+  const mutationObserver = new MutationObserver(function(mutations, observer) {
+    let updatedIframes = [].slice.call(document.querySelectorAll('iframe'));
+    if (updatedIframes.length > iframes.length) {
+      findAndRegisterNewFrame();
+    } else if (updatedIframes.length < iframes.length) {
+      findAndUnregisterRemovedFrame();
+    }
+  });
+
+  function findAndRegisterNewFrame(updatedIframes) {
+    let newIframe = updatedIframes.filter(iframe => !iframes.includes(iframe))[0];
+    Panes.registerIframe(newIframe);
+    iframes = updatedIframes;
+  }
+
+  function findAndUnregisterRemovedFrame(updatedIframes) {
+    let retiredIframe = iframes.filter(iframe => !updatedIframes.includes(iframe))[0];
+    Panes.unregisterIframe(retiredIframe);
+    iframes = updatedIframes;
+  };
+
+  mutationObserver.observe(document.body, {attributes: true, childList: true, subtree: true})
+});
