@@ -91,7 +91,10 @@ window.addEventListener('DOMContentLoaded', function() {
     },
 
     getByLocation: function(location) {
-      return this.list.filter(pane => pane.element.src === location)[0];
+      location = removeTrailingForwardSlash(location);
+      return this.list.filter(pane => {
+        return removeTrailingForwardSlash(pane.element.src) === location;
+      })[0];
     },
 
     add: function(pane) {
@@ -127,6 +130,13 @@ window.addEventListener('DOMContentLoaded', function() {
   };
   Panes.init(iframes);
 
+  function removeTrailingForwardSlash(url) {
+    if (url[url.length - 1] === "/") {
+      return url.slice(0, -1);
+    }
+    return url;
+  }
+
   window.addEventListener('resize', () => Panes.requestUpdates());
 
   let pendingPaneId = null;
@@ -139,6 +149,7 @@ window.addEventListener('DOMContentLoaded', function() {
       } else if (data.navigation) { // location change
         pendingPaneId = data.id;
       } else if (data.initial && Panes.notInitialized()) { // initial load
+        // debugger;
         let pane = Panes.getByLocation(data.location);
         setIframeHeight(pane.id, data.height);
         pane.broadcastId();
