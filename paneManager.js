@@ -149,7 +149,6 @@ window.addEventListener('DOMContentLoaded', function() {
       } else if (data.navigation) { // location change
         pendingPaneId = data.id;
       } else if (data.initial && Panes.notInitialized()) { // initial load
-        // debugger;
         let pane = Panes.getByLocation(data.location);
         setIframeHeight(pane.id, data.height);
         pane.broadcastId();
