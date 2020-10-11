@@ -177,9 +177,9 @@ window.addEventListener('DOMContentLoaded', function() {
   const mutationObserver = new MutationObserver(function(mutations, observer) {
     let updatedIframes = [].slice.call(document.querySelectorAll('iframe'));
     if (updatedIframes.length > iframes.length) {
-      findAndRegisterNewFrame();
+      findAndRegisterNewFrame(updatedIframes);
     } else if (updatedIframes.length < iframes.length) {
-      findAndUnregisterRemovedFrame();
+      findAndUnregisterRemovedFrame(updatedIframes);
     }
   });
 
