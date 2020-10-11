@@ -79,7 +79,7 @@ window.addEventListener('DOMContentLoaded', function() {
       initial: false,
       id: paneId,
       height: generateHeight(),
-      location: location.origin + location.pathname,
+      location: location.href,
     };
     payload = Object.assign(defaults, payload);
     window.parent.postMessage(payload, origin);
