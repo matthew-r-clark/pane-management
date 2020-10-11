@@ -7,21 +7,17 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   window.addEventListener('message', function(event) {
-    if (event.origin) {
-      let data = event.data;
-      let origin = event.origin;
-      paneId = data.id;
-  
-      if (data.name === 'iframe-resizer' && mainWindowOriginUnset()) {
-        mainWindowOrigin = origin;
-      }
-  
-      if (mainWindowOrigin === origin) {
-        if (!data.initial) {
-          let payload = {navigation: data.navigation};
-          sendResponseToOrigin(payload, origin);
-        }
-      }
+    let origin = event.origin;
+    let data = event.data;
+    paneId = data.id;
+
+    if (data.name === 'iframe-resizer' && mainWindowOriginUnset()) {
+      mainWindowOrigin = origin;
+    }
+
+    if (mainWindowOrigin === origin && !data.initial) {
+      let payload = {navigation: data.navigation};
+      sendResponseToOrigin(payload, origin);
     }
   });
 
@@ -84,7 +80,11 @@ window.addEventListener('DOMContentLoaded', function() {
       location: location.href,
     };
     payload = Object.assign(defaults, payload);
-    window.parent.postMessage(payload, origin);
+    try {
+      window.parent.postMessage(payload, origin);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   setTimeout(function() {
