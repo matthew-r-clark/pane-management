@@ -7,18 +7,20 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   window.addEventListener('message', function(event) {
-    let data = event.data;
-    let origin = event.origin;
-    paneId = data.id;
-
-    if (data.name === 'iframe-resizer' && mainWindowOriginUnset()) {
-      mainWindowOrigin = origin;
-    }
-
-    if (mainWindowOrigin === origin) {
-      if (!data.initial) {
-        let payload = {navigation: data.navigation};
-        sendResponseToOrigin(payload, origin);
+    if (event.origin) {
+      let data = event.data;
+      let origin = event.origin;
+      paneId = data.id;
+  
+      if (data.name === 'iframe-resizer' && mainWindowOriginUnset()) {
+        mainWindowOrigin = origin;
+      }
+  
+      if (mainWindowOrigin === origin) {
+        if (!data.initial) {
+          let payload = {navigation: data.navigation};
+          sendResponseToOrigin(payload, origin);
+        }
       }
     }
   });
