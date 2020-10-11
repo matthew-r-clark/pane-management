@@ -64,13 +64,13 @@ window.addEventListener('DOMContentLoaded', function() {
     },
 
     registerIframe: function(iframe) {
-      this.add(new Pane(iframe));
+      let pane = new Pane(iframe);
+      this.add(pane);
     },
 
     unregisterIframe: function(iframe) {
       let pane = this.list.filter(pane => pane.element === iframe)[0];
-      let index = this.list.indexOf(pane);
-      this.list.splice(index, 1);
+      this.remove(pane);
     },
 
     requestUpdates: function(data) {
@@ -101,8 +101,13 @@ window.addEventListener('DOMContentLoaded', function() {
       this.list.push(pane);
     },
 
+    remove: function(pane) {
+      let index = this.list.indexOf(pane);
+      this.list.splice(index, 1);
+    },
+
     isTrustedSource: function(origin) {
-      return this.origins.includes(origin);
+      return this.list.some(pane => pane.origin === origin);
     },
 
     empty: function() {
@@ -113,19 +118,8 @@ window.addEventListener('DOMContentLoaded', function() {
       return this.list.some(pane => !pane.initialized);
     },
 
-    buildOriginsList: function() {
-      let origins = [];
-      this.list.forEach(pane => {
-        if (!origins.includes(pane.origin)) {
-          origins.push(pane.origin);
-        }
-      });
-      return origins;
-    },
-
     init: function(iframes) {
       this.registerPanes(iframes);
-      this.origins = this.buildOriginsList();
     },
   };
   Panes.init(iframes);
