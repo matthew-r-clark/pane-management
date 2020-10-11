@@ -1,4 +1,5 @@
 # Pane Management
+### Automatically and dynamically adjusts height of iframe elements based on it's contents.
 
 If you found this repo, you have probabaly discovered the pain of dynamically resizing iframes to fit their content when that content comes from a different origin. Fortunately, your search has come to an end! Although you do need to be able to add a script to the target page loaded within the iframe.
 
