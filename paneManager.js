@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', function() {
     this.origin = new URL(iframe.src).origin;
     this.previousHeight = 0;
     this.initialized = false;
-    this.eligible = !this.element.height;
+    this.eligible = !this.element.height || !this.element['height-dynamic'];
   }
 
   Pane.prototype.getHeight = function() {
