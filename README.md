@@ -6,11 +6,11 @@ If you found this repo, you have probabaly discovered the pain of dynamically re
 Manage your panes (window...panes, get it?) with ease by simply adding the following JS dependencies:
 1. In your main HTML document which contains the `iframe` tags:
   ```html
-  <script src="https://matthew-r-clark.github.io/pane-management/paneManager.js"></script>
+  <script src="https://matthew-r-clark.github.io/pane-management/babel/paneManager.min.js"></script>
   ```
 2. In any HTML document that could be potentially loaded within the `iframe` (probably just want to load it globally for that site):
   ```html
-  <script src="https://matthew-r-clark.github.io/pane-management/pane.js"></script>
+  <script src="https://matthew-r-clark.github.io/pane-management/babel/pane.min.js"></script>
   ```
 
 Features:
