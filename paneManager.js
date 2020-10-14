@@ -39,7 +39,13 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   Pane.prototype.scrollToTop = function() {
-    window.scrollTo(0, this.element.offsetTop);
+    let element = this.element;
+    let offsetHeight = 0;
+    while (element !== document.body) {
+      offsetHeight += element.offsetTop;
+      element = element.offsetParent;
+    }
+    window.scrollTo(0, offsetHeight);
   }
 
   Pane.prototype.requestUpdate = function(data) {
@@ -195,8 +201,4 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   mutationObserver.observe(document.body, {attributes: true, childList: true, subtree: true})
-});
-
-window.addEventListener('click', event => {
-  console.log('click detected');
 });
