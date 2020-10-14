@@ -31,8 +31,22 @@ window.addEventListener('DOMContentLoaded', function() {
     sendResponse({clicked: true});
   }
 
+  let previousHeight;
+  const mutationObserver = new MutationObserver(function(mutations, observer) {
+    for (let i = 0; i < 5; i += 1) {
+      setTimeout(function() {
+        let newHeight = generateHeight();
+        if (previousHeight !== newHeight) {
+          previousHeight = newHeight;
+          sendResponse({changeDetected: true});        }
+      }, 500 * i);
+    }
+  });
+
+  mutationObserver.observe(document.body, {attributes: true, childList: true, subtree: true});
+
   function generateHeight() {
-    let height = 0;
+    let height = generateMarginBorderHeightOfElement(document.body);
     let children = [].slice.call(document.body.children);
     children.forEach(child => {
       height += generateHeightOfElement(child);
@@ -41,20 +55,28 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   function generateHeightOfElement(element) {
-    let styles = window.getComputedStyle(element);
-    
-    let marginTopHeight = formatPixelString(styles.marginTop),
-        marginBottomHeight = formatPixelString(styles.marginBottom),
-        borderTopHeight = formatBorderString(styles.borderTop),
-        borderBottomHeight = formatBorderString(styles.borderBottom);
+    let baseHeight = element.scrollHeight;
+    let marginBorderHeight = generateMarginBorderHeightOfElement(element);
+    return baseHeight + marginBorderHeight;
+  }
 
-    let baseHeight = element.scrollHeight,
-        marginHeight = marginTopHeight + marginBottomHeight,
-        borderHeight = borderTopHeight + borderBottomHeight;
-    
-    let totalHeight = baseHeight + marginHeight + borderHeight;
+  function generateMarginBorderHeightOfElement(element) {
+    let style = window.getComputedStyle(element);
+    let marginHeight = calculateMarginHeight(style);
+    let borderHeight = calculateBorderHeight(style);
+    return marginHeight + borderHeight;
+  }
 
-    return totalHeight;
+  function calculateMarginHeight(style) {
+    let marginTopHeight = formatPixelString(style.marginTop),
+        marginBottomHeight = formatPixelString(style.marginBottom);
+    return marginTopHeight + marginBottomHeight;
+  }
+
+  function calculateBorderHeight(style) {
+    let borderTopHeight = formatBorderString(style.borderTop),
+        borderBottomHeight = formatBorderString(style.borderBottom);
+    return borderTopHeight + borderBottomHeight;
   }
 
   function formatPixelString(string) {

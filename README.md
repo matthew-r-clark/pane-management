@@ -14,7 +14,7 @@ Manage your panes (window...panes, get it?) with ease by simply adding the follo
   ```
 
 Features:
-- Automatically detects any `iframe` in page, assigns an id so the user can navigate to other pages, even if navigating to a different origin (still needs to have `pane.js` included though).
+- Automatically detects any `iframe` in page, assigns an id so the user can navigate to other pages, even if navigating to a different origin (new page still needs to have `pane.js` script included as a dependency).
 - Automatically resizes `iframe` heights on initial page load, window resize, navigation to new page within `iframe` (scrolls view to top of `iframe`), and if user interaction changes the height of the `iframe` content.
 - Any new `iframe` elements added to the page after initial load will dynamically be registered and work as normal, and any removed `iframe` elements will be unregistered.
 - Not recommended with `iframe` content that needs to use sessions.

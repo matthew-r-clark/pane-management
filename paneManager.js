@@ -138,8 +138,14 @@ window.addEventListener('DOMContentLoaded', function() {
     let data = event.data;
 
     if (Panes.isTrustedSource(event.origin)) {
-      if (data.clicked) {
+      if (data.changeDetected && data.id) {
         setIframeHeight(data.id, data.height);
+      } else if (data.clicked) {
+        setIframeHeight(data.id, data.height);
+        let pane = Panes.getById(data.id);
+        if (pane.heightChanged()) {
+          pane.scrollToTop();
+        }
       } else if (data.navigation) { // location change
         pendingPaneId = data.id;
       } else if (data.initial && Panes.notInitialized()) { // initial load
@@ -156,7 +162,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
         pane.setOrigin(event.origin);
         pane.broadcastId();
-      } else if (data.id) { // page resized or interaction within iframe
+      } else if (data.id) { // window resized
         setIframeHeight(data.id, data.height);
       }
     }
@@ -189,4 +195,8 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   mutationObserver.observe(document.body, {attributes: true, childList: true, subtree: true})
+});
+
+window.addEventListener('click', event => {
+  console.log('click detected');
 });
