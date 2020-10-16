@@ -33,13 +33,15 @@ window.addEventListener('DOMContentLoaded', function() {
 
   let previousHeight;
   const mutationObserver = new MutationObserver(function(mutations, observer) {
-    for (let i = 0; i < 5; i += 1) {
+    sendResponse({changeDetected: true});
+    for (let i = 0; i < 1000; i += 1) {
       setTimeout(function() {
         let newHeight = generateHeight();
         if (previousHeight !== newHeight) {
           previousHeight = newHeight;
-          sendResponse({changeDetected: true});        }
-      }, 500 * i);
+          sendResponse({changeDetected: true});
+        }
+      }, 10 * i);
     }
   });
 
