@@ -34,8 +34,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  Pane.prototype.heightChanged = function() {
-    return this.previousHeight !== this.getHeight();
+  Pane.prototype.heightDecreased = function() {
+    return Number(this.previousHeight) > Number(this.getHeight());
   }
 
   Pane.prototype.scrollToTop = function() {
@@ -140,18 +140,18 @@ window.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', () => Panes.requestUpdates());
 
   let pendingPaneId = null;
+  let interaction = false;
   window.addEventListener('message', function(event) {
     let data = event.data;
 
     if (Panes.isTrustedSource(event.origin)) {
-      if (data.changeDetected && data.id) {
-        setIframeHeight(data.id, data.height);
-      } else if (data.clicked) {
+      if ((data.changeDetected || data.clicked) && data.id) {
         setIframeHeight(data.id, data.height);
         let pane = Panes.getById(data.id);
-        if (pane.heightChanged()) {
+        if (pane.heightDecreased() && interaction) {
           pane.scrollToTop();
         }
+        interaction = true;
       } else if (data.navigation) { // location change
         pendingPaneId = data.id;
       } else if (data.initial && Panes.notInitialized()) { // initial load
@@ -163,7 +163,7 @@ window.addEventListener('DOMContentLoaded', function() {
         pendingPaneId = null;
         setIframeHeight(id, data.height);
         let pane = Panes.getById(id);
-        if (pane.heightChanged()) {
+        if (pane.heightDecreased()) {
           pane.scrollToTop();
         }
         pane.setOrigin(event.origin);
