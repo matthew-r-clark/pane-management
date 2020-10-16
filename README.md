@@ -18,3 +18,5 @@ Features:
 - Automatically resizes `iframe` heights on initial page load, window resize, navigation to new page within `iframe` (scrolls view to top of `iframe`), and if user interaction changes the height of the `iframe` content.
 - Any new `iframe` elements added to the page after initial load will dynamically be registered and work as normal, and any removed `iframe` elements will be unregistered.
 - Not recommended with `iframe` content that needs to use sessions.
+
+Check out the [demo](https://matthew-r-clark.github.io/iframe-resize-demo/), which provides more information.
