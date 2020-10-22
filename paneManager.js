@@ -1,5 +1,10 @@
 window.addEventListener('DOMContentLoaded', function() {
-  let iframes = [].slice.call(document.querySelectorAll('iframe'));
+  let iframes = [].slice.call(document.querySelectorAll('iframe'))
+                  .filter(isValidIframe);
+
+  function isValidIframe(iframe) {
+    return iframe.getAttribute('pane-management');
+  }
 
   let generateId = (function() {
     let count = 0;
@@ -16,7 +21,6 @@ window.addEventListener('DOMContentLoaded', function() {
     this.origin = new URL(iframe.src).origin;
     this.previousHeight = 0;
     this.initialized = false;
-    this.eligible = !this.element.height || !this.element['height-dynamic'];
   }
 
   Pane.prototype.getHeight = function() {
@@ -25,12 +29,12 @@ window.addEventListener('DOMContentLoaded', function() {
 
   Pane.prototype.setHeight = function(value) {
     let currentHeight = this.getHeight();
-    if (this.eligible && currentHeight !== value) {
+    if (currentHeight !== value) {
       this.previousHeight = currentHeight;
       this.element.height = value;
     }
-    if (!this.initialized) {
-      this.initialized = true;
+    if (this.isNotInitialized()) {
+      this.initialize();
     }
   }
 
@@ -60,6 +64,14 @@ window.addEventListener('DOMContentLoaded', function() {
 
   Pane.prototype.setOrigin = function(origin) {
     this.origin = origin;
+  }
+
+  Pane.prototype.initialize = function() {
+    this.initialized = true;
+  }
+
+  Pane.prototype.isNotInitialized = function() {
+    return !this.initialized;
   }
 
   let Panes = {
@@ -180,7 +192,8 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   const mutationObserver = new MutationObserver(function(mutations, observer) {
-    let updatedIframes = [].slice.call(document.querySelectorAll('iframe'));
+    let updatedIframes = [].slice.call(document.querySelectorAll('iframe'))
+                           .filter(isValidIframe);
     if (updatedIframes.length > iframes.length) {
       findAndRegisterNewFrame(updatedIframes);
     } else if (updatedIframes.length < iframes.length) {
